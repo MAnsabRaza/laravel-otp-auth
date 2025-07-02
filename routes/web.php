@@ -26,6 +26,7 @@ Route::get('/resetPassword', [AuthController::class, 'resetPassword'])->name('re
 
 Route::post('/saveRegister', [AuthController::class, 'saveRegister'])->name('saveRegister');
 Route::post('/checkLogin', [AuthController::class, 'checkLogin'])->name('checkLogin');
+Route::post('/sendOtp', [AuthController::class, 'sendOtp'])->name('sendOtp');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
+Route::post('/sndVerifyOtp', [AuthController::class, 'sndVerifyOtp'])->name('sndVerifyOtp');
 Route::get('/home', [HomeController::class, 'index'])->name('home');

@@ -75,12 +75,6 @@
                             <div class="my-3 p-3 bg-light text-center rounded border">
                                 <a href="{{ route('login') }}" class="btn btn-link">Back to Login</a>
                             </div>
-                            <div class="my-3 p-3 bg-light text-center rounded border">
-                                <a href="{{ route('verifyOtp') }}" class="btn btn-link">Back to Otp</a>
-                            </div>
-                            <div class="my-3 p-3 bg-light text-center rounded border">
-                                <a href="{{ route('resetPassword') }}" class="btn btn-link">Back to Reset</a>
-                            </div>
                         </div>
                     </div>
                     <div class="col-md-4"></div>
@@ -88,6 +82,52 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#btnOtp').click(function(e) {
+                console.log('clicked');
+                const email = $('#email').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '/sendOtp',
+                    data: {
+                        email: email
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Toastify({
+                            text: response.message,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                            backgroundColor: "#4caf50",
+                        }).showToast();
+
+                        setTimeout(() => {
+                            window.location.href = response.redirect;
+                        }, 1500);
+                    },
+                    error: function(xhr) {
+                        const response = xhr.responseJSON;
+                        Toastify({
+                            text: response?.message || "Login failed",
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                            backgroundColor: "#f44336",
+                        }).showToast();
+                    }
+                })
+            })
+        })
+    </script>
 </body>
 
 </html>
