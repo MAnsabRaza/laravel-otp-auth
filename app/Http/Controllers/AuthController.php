@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -68,5 +70,25 @@ class AuthController extends Controller
     {
         Auth::logout();
         return redirect()->route('login');
+    }
+    public function sendOtp(Request $request)
+    {
+        $request->validate(([
+            'email' => 'required|email|exists:users',
+        ]));
+        $user = User::where('email', $request->email)->first();
+        $otp = rand(100000, 999999);
+        $user->update([
+            'otp' => $otp,
+            'otp_expires_at' => Carbon::now()->addMinutes(5),
+        ]);
+        Mail::raw("Your Otp is $otp", function ($message) use ($user) {
+            $message->to($user->email)->subject("Password Reset Otp");
+        });
+        return response()->json([
+            'status' => true,
+            'message' => 'Login successful!',
+            'redirect' => route('verifyOtp')
+        ]);
     }
 }
