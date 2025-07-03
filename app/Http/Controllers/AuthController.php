@@ -83,19 +83,19 @@ class AuthController extends Controller
             'otp' => $otp,
             'otp_expires_at' => Carbon::now()->addMinutes(5),
         ]);
-        try {
-            Mail::raw("Your Otp is $otp", function ($message) use ($user) {
-                $message->to($user->email)->subject("Password Reset Otp");
-            });
-        } catch (\Exception $e) {
-            // Log::error('Mail sending failed: ' . $e->getMessage());
+        session(['reset_email' => $request->email]);
+        // try {
+        //     Mail::raw("Your Otp is $otp", function ($message) use ($user) {
+        //         $message->to($user->email)->subject("Password Reset Otp");
+        //     });
+        // } catch (\Exception $e) {
 
-            return response()->json([
-                'status' => true,
-                'message' => 'OTP generated successfully! (Email service temporarily unavailable)',
-                'redirect' => route('verifyOtp')
-            ]);
-        }
+        //     return response()->json([
+        //         'status' => true,
+        //         'message' => 'OTP generated successfully! (Email service temporarily unavailable)',
+        //         'redirect' => route('verifyOtp')
+        //     ]);
+        // }
         return response()->json([
             'status' => true,
             'message' => 'Login successful!',
@@ -108,34 +108,26 @@ class AuthController extends Controller
             $request->validate([
                 'otp' => 'required|numeric|digits:6'
             ]);
-
             $email = session('reset_email');
-
             if (!$email) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Email session expired. Please request a new OTP.'
                 ], 400);
             }
-
             $user = User::where('email', $email)->first();
-
             if (!$user) {
                 return response()->json([
                     'status' => false,
                     'message' => 'User not found.'
                 ], 404);
             }
-
-            // Check if OTP exists and is not expired
             if (!$user->otp || !$user->otp_expires_at) {
                 return response()->json([
                     'status' => false,
                     'message' => 'No OTP found. Please request a new OTP.'
                 ], 400);
             }
-
-            // Check if OTP matches and is not expired
             if ($user->otp != $request->otp) {
                 return response()->json([
                     'status' => false,
@@ -149,10 +141,7 @@ class AuthController extends Controller
                     'message' => 'OTP has expired. Please request a new OTP.'
                 ], 400);
             }
-
-            // OTP is valid, store verified email in session
             session(['verified_email' => $email]);
-
             return response()->json([
                 'status' => true,
                 'message' => 'OTP verified successfully!',
@@ -177,10 +166,16 @@ class AuthController extends Controller
     public function saveResetPassword(Request $request)
     {
         $request->validate([
-            'old_password' => 'required',
             'new_password' => 'required',
         ]);
         $email = session('verified_email');
+        if (!$email) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Session expired. Please verify OTP again.'
+            ]);
+        }
+
         $user = User::where('email', $email)->first();
         $user->update([
             'password' => Hash::make($request->new_password),
@@ -191,7 +186,7 @@ class AuthController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Change Password successful!',
-            'redirect' => route('/')
+            'redirect' => route('login')
         ]);
     }
 }

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', function () {
 //     return view('welcome');
 // });
-Route::get('/', [AuthController::class, 'login'])->name(name: 'login');
+Route::get('/', [AuthController::class, 'login'])->name('login');
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/forgetPassword', [AuthController::class, 'forgetPassword'])->name('forgetPassword');
 Route::get('/verifyOtp', [AuthController::class, 'verifyOtp'])->name('verifyOtp');
@@ -29,4 +29,5 @@ Route::post('/checkLogin', [AuthController::class, 'checkLogin'])->name('checkLo
 Route::post('/sendOtp', [AuthController::class, 'sendOtp'])->name('sendOtp');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/sndVerifyOtp', [AuthController::class, 'sndVerifyOtp'])->name('sndVerifyOtp');
+Route::post('/saveResetPassword', [AuthController::class, 'saveResetPassword'])->name('saveResetPassword');
 Route::get('/home', [HomeController::class, 'index'])->name('home');

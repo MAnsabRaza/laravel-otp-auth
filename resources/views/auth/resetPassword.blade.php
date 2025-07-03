@@ -55,18 +55,14 @@
                         </div>
                         <div class="p-3">
                             <div class="form-group my-2">
-                                <label for="old_password" class="fw-semibold fs-5 my-1">Old Password</label>
-                                <input type="old_password" class="form-control form-control-lg" id="old_password"
-                                    name="old_password" placeholder="Enter Your Old Password">
-                            </div>
-                            <div class="form-group my-2">
                                 <label for="new_password" class="fw-semibold fs-5 my-1">Change Password</label>
                                 <input type="password" class="form-control form-control-lg" id="new_password"
                                     name="new_password" placeholder="Enter Your New Password">
                             </div>
 
                             <div class="my-2 form-group">
-                                <button class="btn w-100 btn-lg btnSignUp" id="btnSave">Change Password</button>
+                                <button class="btn w-100 btn-lg btnSignUp" id="btnResetPassword">Change
+                                    Password</button>
                             </div>
 
                         </div>
@@ -76,6 +72,64 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#btnResetPassword').click(function(e) {
+                e.preventDefault();
+                const newPassword = $("#new_password").val();
+                if (newPassword == '') {
+                    Toastify({
+                        text: "Password is required",
+                        duration: 3000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        stopOnFocus: true,
+                        backgroundColor: "#f44336",
+                    }).showToast();
+                    return;
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/saveResetPassword",
+                    data: {
+                        "new_password": newPassword,
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Toastify({
+                            text: response.message,
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                            backgroundColor: "#4caf50",
+                        }).showToast();
+
+                        setTimeout(() => {
+                            window.location.href = response.redirect;
+                        }, 1500);
+                    },
+                    error: function(xhr) {
+                        const response = xhr.responseJSON;
+                        Toastify({
+                            text: response?.message || "Login failed",
+                            duration: 3000,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            stopOnFocus: true,
+                            backgroundColor: "#f44336",
+                        }).showToast();
+                    }
+                })
+            });
+        })
+    </script>
 </body>
 
 </html>
