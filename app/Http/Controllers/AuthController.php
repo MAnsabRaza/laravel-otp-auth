@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WelcomeMail;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -84,18 +85,20 @@ class AuthController extends Controller
             'otp_expires_at' => Carbon::now()->addMinutes(5),
         ]);
         session(['reset_email' => $request->email]);
-        // try {
-        //     Mail::raw("Your Otp is $otp", function ($message) use ($user) {
-        //         $message->to($user->email)->subject("Password Reset Otp");
-        //     });
-        // } catch (\Exception $e) {
+        try {
+            // Mail::raw("Your OTP for password reset is: $otp. This code will expire in 5 minutes.", function ($message) use ($user) {
+            //     $message->to($user->email)
+            //         ->subject("Password Reset OTP - " . config('app.name'));
+            // });
+            Mail::to($user->email)->send(new WelcomeMail($user, $otp));
+        } catch (\Exception $e) {
 
-        //     return response()->json([
-        //         'status' => true,
-        //         'message' => 'OTP generated successfully! (Email service temporarily unavailable)',
-        //         'redirect' => route('verifyOtp')
-        //     ]);
-        // }
+            return response()->json([
+                'status' => true,
+                'message' => 'OTP generated successfully! (Email service temporarily unavailable)',
+                'redirect' => route('verifyOtp')
+            ]);
+        }
         return response()->json([
             'status' => true,
             'message' => 'Login successful!',
